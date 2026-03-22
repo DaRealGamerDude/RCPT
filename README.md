@@ -4,6 +4,18 @@
 
 ---
 
+## 👥 Team
+
+* **Bhavit Anand** — https://github.com/DaRealGamerDude
+
+* **Gaurang Dhall** — https://github.com/gogo12345-bit
+
+* **Krish Anand** — https://github.com/Krish-Anand-dev
+
+* **Prateek Tanwar** — https://github.com/prateektanwar373
+
+---
+
 ## 🧠 Problem Statement
 
 Ransomware attackers demand payments in cryptocurrency because:
