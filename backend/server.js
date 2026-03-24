@@ -6,7 +6,9 @@ require("dotenv").config();
 const detectAll = require("./detection");
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "*"
+}));
 
 const PORT = process.env.PORT || 5000;
 
@@ -31,14 +33,14 @@ app.get("/wallet/:address", async (req, res) => {
       },
     });
 
-    // ✅ CHECK API STATUS
+    // CHECK API STATUS
     if (response.data.status !== "1") {
       throw new Error("Etherscan API error");
     }
 
     const transactions = response.data.result;
 
-    // ✅ SAFETY CHECK
+    // SAFETY CHECK
     if (!transactions || transactions.length === 0) {
       throw new Error("No transactions found");
     }
@@ -47,6 +49,7 @@ app.get("/wallet/:address", async (req, res) => {
     const cleanedTx = transactions
       .slice(0, 50)
       .map((tx) => ({
+        hash: tx.hash,
         from: tx.from,
         to: tx.to,
         amount: Number(tx.value) / 1e18,

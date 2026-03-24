@@ -20,19 +20,22 @@ export interface Graph {
 }
 
 export interface Transaction {
+  hash: string;
   from: string;
   to: string;
   amount: number;
   timestamp: string;
 }
 
+export type FlagType = 'splitting' | 'chaining' | 'large';
+
 export interface Flag {
-  type: 'splitting' | 'chaining' | 'large';
+  type: FlagType;
   wallet: string;
   amount?: number;
 }
 
-export interface WalletAnalysisResponse {
+export interface WalletData {
   stats: WalletStats;
   graph: Graph;
   transactions: Transaction[];

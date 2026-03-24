@@ -1,111 +1,256 @@
 import { useState } from 'react';
-import { Search } from 'lucide-react';
 import axios from 'axios';
-import { WalletAnalysisResponse } from '../types';
-import StatsCards from './StatsCards';
-import GraphVisualization from './GraphVisualization';
-import TransactionsTable from './TransactionsTable';
-import SuspiciousActivityPanel from './SuspiciousActivityPanel';
+import { Search, TrendingUp, TrendingDown, Activity, Loader2, AlertCircle } from 'lucide-react';
+import { WalletData, Flag } from '../types';
 
-export default function Dashboard() {
-  const [walletAddress, setWalletAddress] = useState('');
+interface DashboardProps {
+  walletData: WalletData | null;
+  setWalletData: (data: WalletData | null) => void;
+  searchedAddress: string;
+  setSearchedAddress: (address: string) => void;
+}
+
+interface GroupedFlag {
+  type: string;
+  count: number;
+  severity: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export default function Dashboard({ walletData, setWalletData, searchedAddress, setSearchedAddress }: DashboardProps) {
+  const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<WalletAnalysisResponse | null>(null);
+  const [error, setError] = useState('');
 
   const handleSearch = async () => {
-    if (!walletAddress.trim()) {
+    if (!address.trim()) {
       setError('Please enter a wallet address');
       return;
     }
 
     setLoading(true);
-    setError(null);
-    setData(null);
+    setError('');
 
     try {
-      const response = await axios.get<WalletAnalysisResponse>(
-        `http://localhost:5000/wallet/${walletAddress.trim()}`
-      );
-      setData(response.data);
+      const response = await axios.get<WalletData>(`http://localhost:5000/wallet/${address}`);
+      setWalletData(response.data);
+      setSearchedAddress(address);
     } catch (err) {
-      setError('Failed to analyze wallet. Please check the address and try again.');
-      console.error(err);
+      setError('Failed to fetch wallet data. Please check the address and try again.');
+      setWalletData(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch();
+  const calculateRiskScore = (flags: Flag[]): number => {
+    const score = flags.length * 10;
+    return Math.min(score, 100);
+  };
+
+  const getRiskLevel = (score: number): { label: string; color: string } => {
+    if (score <= 30) return { label: 'Low Risk', color: 'text-green-400' };
+    if (score <= 60) return { label: 'Medium Risk', color: 'text-yellow-400' };
+    return { label: 'High Risk', color: 'text-red-400' };
+  };
+
+  const generateInsights = (data: WalletData): string[] => {
+    const insights: string[] = [];
+    const { stats, flags, transactions } = data;
+
+    if (flags.some(f => f.type === 'splitting')) {
+      insights.push('Wallet is distributing funds across multiple addresses');
+    }
+
+    if (flags.some(f => f.type === 'chaining')) {
+      insights.push('Potential laundering pattern detected');
+    }
+
+    if (flags.some(f => f.type === 'large')) {
+      insights.push('High-value transactions observed');
+    }
+
+    if (stats.totalSent > stats.totalReceived * 0.9) {
+      insights.push('Behavior resembles ransomware cash-out flow');
+    }
+
+    if (transactions.length > 50) {
+      insights.push('High transaction volume detected');
+    }
+
+    if (insights.length === 0) {
+      insights.push('No significant suspicious patterns detected');
+    }
+
+    return insights;
+  };
+
+  const groupFlags = (flags: Flag[]): GroupedFlag[] => {
+    const grouped = flags.reduce((acc, flag) => {
+      if (!acc[flag.type]) {
+        acc[flag.type] = { count: 0, flags: [] };
+      }
+      acc[flag.type].count++;
+      acc[flag.type].flags.push(flag);
+      return acc;
+    }, {} as Record<string, { count: number; flags: Flag[] }>);
+
+    return Object.entries(grouped).map(([type, data]) => ({
+      type,
+      count: data.count,
+      severity: type === 'large' ? 'HIGH' : type === 'chaining' ? 'MEDIUM' : 'LOW',
+    }));
+  };
+
+  const getSeverityColor = (severity: string): string => {
+    switch (severity) {
+      case 'HIGH': return 'bg-red-500/20 text-red-400 border-red-500/30';
+      case 'MEDIUM': return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+      case 'LOW': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      default: return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
     }
   };
 
+  const riskScore = walletData ? calculateRiskScore(walletData.flags) : 0;
+  const riskLevel = getRiskLevel(riskScore);
+
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-100 mb-2">
-            Ransomware Crypto Payment Tracker
-          </h1>
-          <p className="text-gray-400">
-            Blockchain Forensics & Transaction Analysis Tool
-          </p>
-        </header>
+    <div className="p-8">
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-slate-100 mb-2">Investigation Dashboard</h2>
+        <p className="text-slate-400">Blockchain forensics and ransomware payment tracking</p>
+      </div>
 
-        <div className="mb-8">
-          <div className="flex gap-3">
-            <input
-              type="text"
-              value={walletAddress}
-              onChange={(e) => setWalletAddress(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Enter wallet address (e.g., 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045)"
-              className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
-            />
-            <button
-              onClick={handleSearch}
-              disabled={loading}
-              className="bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors"
-            >
-              <Search size={20} />
-              {loading ? 'Analyzing...' : 'Search'}
-            </button>
-          </div>
-        </div>
-
-        {loading && (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-500 mb-4"></div>
-            <p className="text-gray-400 text-lg">Analyzing wallet...</p>
-          </div>
-        )}
-
-        {error && (
-          <div className="bg-red-950 border border-red-800 rounded-lg p-4 mb-8">
-            <p className="text-red-300">{error}</p>
-          </div>
-        )}
-
-        {data && !loading && (
-          <div className="space-y-8">
-            <StatsCards stats={data.stats} />
-
-            {data.flags && data.flags.length > 0 && (
-              <SuspiciousActivityPanel flags={data.flags} />
+      <div className="bg-slate-900 rounded-lg border border-slate-800 p-6 mb-6">
+        <label className="block text-sm font-medium text-slate-300 mb-3">Wallet Address</label>
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            placeholder="Enter wallet address (e.g., 0x123...)"
+            className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+          />
+          <button
+            onClick={handleSearch}
+            disabled={loading}
+            className="bg-cyan-500 hover:bg-cyan-600 disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <Search className="w-5 h-5" />
+                Analyze
+              </>
             )}
-
-            <GraphVisualization
-              graph={data.graph}
-              flags={data.flags}
-              searchedWallet={walletAddress.trim()}
-            />
-
-            <TransactionsTable transactions={data.transactions} />
+          </button>
+        </div>
+        {error && (
+          <div className="mt-3 text-red-400 text-sm flex items-center gap-2">
+            <AlertCircle className="w-4 h-4" />
+            {error}
           </div>
         )}
       </div>
+
+      {!walletData && !loading && (
+        <div className="text-center py-20">
+          <Search className="w-16 h-16 text-slate-700 mx-auto mb-4" />
+          <h3 className="text-xl font-medium text-slate-400 mb-2">Enter a wallet address to begin analysis</h3>
+          <p className="text-slate-500">Investigate blockchain transactions and detect suspicious patterns</p>
+        </div>
+      )}
+
+      {walletData && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-slate-400 text-sm font-medium">Risk Score</span>
+              </div>
+              <div className={`text-4xl font-bold ${riskLevel.color} mb-2`}>{riskScore}</div>
+              <div className="flex items-center gap-2">
+                <div className={`px-2 py-1 rounded text-xs font-medium ${riskLevel.color} bg-current bg-opacity-10`}>
+                  {riskLevel.label}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-slate-400 text-sm font-medium">Total Sent</span>
+                <TrendingDown className="w-5 h-5 text-orange-400" />
+              </div>
+              <div className="text-3xl font-bold text-orange-400">{walletData.stats.totalSent.toFixed(4)}</div>
+              <div className="text-xs text-slate-500 mt-1">ETH</div>
+            </div>
+
+            <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-slate-400 text-sm font-medium">Total Received</span>
+                <TrendingUp className="w-5 h-5 text-green-400" />
+              </div>
+              <div className="text-3xl font-bold text-green-400">{walletData.stats.totalReceived.toFixed(4)}</div>
+              <div className="text-xs text-slate-500 mt-1">ETH</div>
+            </div>
+
+            <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-slate-400 text-sm font-medium">Transaction Count</span>
+                <Activity className="w-5 h-5 text-cyan-400" />
+              </div>
+              <div className="text-3xl font-bold text-cyan-400">{walletData.stats.txCount}</div>
+              <div className="text-xs text-slate-500 mt-1">Total transactions</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
+              <h3 className="text-lg font-semibold text-slate-100 mb-4">Investigation Insights</h3>
+              <div className="space-y-3">
+                {generateInsights(walletData).map((insight, index) => (
+                  <div key={index} className="flex items-start gap-3 text-slate-300">
+                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-2" />
+                    <span className="text-sm">{insight}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
+              <h3 className="text-lg font-semibold text-slate-100 mb-4">Suspicious Activity</h3>
+              {walletData.flags.length === 0 ? (
+                <p className="text-slate-500 text-sm">No suspicious activity detected</p>
+              ) : (
+                <div className="space-y-3">
+                  {groupFlags(walletData.flags).map((flag, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <AlertCircle className="w-5 h-5 text-red-400" />
+                        <div>
+                          <div className="text-sm font-medium text-slate-200 capitalize">
+                            {flag.type} detected
+                          </div>
+                          <div className="text-xs text-slate-500">
+                            {flag.count} occurrence{flag.count > 1 ? 's' : ''}
+                          </div>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1 rounded border text-xs font-medium ${getSeverityColor(flag.severity)}`}>
+                        {flag.severity}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

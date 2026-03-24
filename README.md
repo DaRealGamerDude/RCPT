@@ -1,6 +1,6 @@
-# Ransomware-Crypto-Payments-Tracker
+# 🚀 Ransomware Crypto Payments Tracker
 
-**HackXTract 2026 — Blockchain & Cybersecurity Track**
+### Blockchain Forensics & Transaction Analysis Dashboard
 
 ---
 
@@ -16,150 +16,266 @@
 
 ---
 
-## 🧠 Problem Statement
+## 🧠 Overview
 
-Ransomware attackers demand payments in cryptocurrency because:
+The **Ransomware Crypto Payment Tracker** is a blockchain forensics tool designed to analyze cryptocurrency wallet activity and identify suspicious transaction patterns commonly associated with ransomware operations.
 
-* Transactions are public but difficult to interpret
-* Funds are moved across multiple wallets to hide trails
-* Investigators lack simple tools to trace fund movement
+It transforms raw blockchain data into an **interactive investigation dashboard**, enabling users to:
+
+* Track fund movements across wallets
+* Visualize transaction networks
+* Detect suspicious financial behavior
+* Understand potential laundering patterns
+
+---
+
+## 🎯 Problem Statement
+
+Ransomware attackers increasingly demand payments in cryptocurrency due to:
+
+* Pseudonymous wallet identities
+* Complex fund movement across multiple addresses
+* Lack of accessible tools for tracing and interpretation
+
+Security analysts and investigators often struggle to **connect the dots** between transactions and suspicious activity.
 
 ---
 
 ## 💡 Solution
 
-This project is a **simplified blockchain forensics tool** that:
+This platform provides a simplified but powerful approach to blockchain forensics by combining:
 
-* Tracks cryptocurrency wallet activity
-* Visualizes transaction flow
-* Detects suspicious fund movement patterns
-
-It demonstrates how cybersecurity teams can trace ransomware payments using blockchain data.
-
----
-
-## ⚙️ Key Features
-
-### 📊 Wallet Tracking
-
-* Total Received
-* Total Sent
-* Transaction Count
-* Recent Transactions
+* Real-time wallet data retrieval
+* Graph-based transaction visualization
+* Rule-based anomaly detection
+* Structured investigation workflows
 
 ---
 
-### 🔗 Transaction Flow Analysis
+## ✨ Key Features
 
-* Tracks movement between wallets
-* Builds a network of fund transfers
+### 🔍 Wallet Analysis
 
----
+* Fetches real transaction data using blockchain APIs
+* Calculates:
 
-### 🚨 Suspicious Pattern Detection (Rule-Based)
-
-* **Splitting** → One wallet sends funds to multiple wallets
-* **Chaining** → Funds move across wallets sequentially
-* **Large Transfers** → High-value transactions flagged
+  * Total Sent
+  * Total Received
+  * Transaction Count
 
 ---
 
-### 🧩 Wallet Tagging (Logical)
+### ⚠️ Risk Scoring System
 
-* Source Wallet
-* Intermediate Wallets
-* Potential Laundering Nodes
+* Assigns a **risk score (0–100)** based on detected anomalies
+* Categorizes wallets into:
 
----
-
-### 📦 Fallback Demo Dataset
-
-* Ensures system works even without API
-* Provides realistic, pre-structured transaction flows
+  * Low Risk
+  * Medium Risk
+  * High Risk
 
 ---
 
-## 🏗️ Architecture
+### 🚨 Suspicious Activity Detection
 
-Frontend (React)
-↓
-Backend (Node.js + Express)
-↓
-Blockchain API (Etherscan)
+Rule-based detection engine identifies:
 
----
+* **Splitting**
+  One wallet distributes funds across multiple addresses
 
-## ⚙️ How It Works
+* **Chaining**
+  Sequential transactions used to obscure origin
 
-1. User inputs a wallet address
-2. Backend fetches transaction data via Etherscan API
-3. Data is processed into:
-
-   * Wallet statistics
-   * Graph structure (nodes + edges)
-4. Detection logic flags suspicious patterns
-5. Frontend displays:
-
-   * Stats
-   * Transactions
-   * Alerts
+* **Large Transfers**
+  High-value transactions indicating potential laundering
 
 ---
 
-## 🔐 Cybersecurity Relevance
+### 🧠 Investigation Insights
 
-Ransomware groups rely on cryptocurrency due to decentralization and pseudo-anonymity.
+Automatically generated intelligence summaries that describe:
 
-This project demonstrates:
-
-* Blockchain transparency as an investigative tool
-* Post-incident fund tracing
-* Identification of suspicious transaction behavior
+* Fund distribution patterns
+* Possible laundering behavior
+* Indicators of ransomware cash-out activity
 
 ---
 
-## 🛠️ Tech Stack
+### 🔗 Transaction Graph Visualization
+
+* Interactive network graph (Cytoscape)
+* Highlights:
+
+  * Target wallet
+  * Suspicious wallets
+  * Transaction relationships
+* Edge thickness represents transaction value
+
+---
+
+### 📄 Transaction Explorer
+
+* Full transaction history
+* Color-coded:
+
+  * Incoming (green)
+  * Outgoing (red)
+* Timestamped activity logs
+
+---
+
+### 🕒 Timeline Analysis
+
+* Chronological breakdown of wallet activity
+* Highlights key events such as:
+
+  * Large transfers
+  * Chaining behavior
+  * Suspicious spikes
+
+---
+
+### 🛡️ Offline Fallback Mode
+
+* Uses preloaded dataset when API is unavailable
+* Ensures uninterrupted demo and testing
+
+---
+
+## 🏗️ Tech Stack
 
 ### Frontend
 
-* React.js
+* React + TypeScript
+* TailwindCSS
+* Cytoscape.js (Graph Visualization)
 * Axios
 
 ### Backend
 
 * Node.js
 * Express.js
-* Axios
 
-### API
+### Data Source
 
-* Etherscan API (Ethereum-based chains)
-
----
-
-## ⚠️ Limitations
-
-* Currently supports Ethereum-based chains (EVM)
-* Bitcoin and non-EVM chains are not supported due to architectural differences
+* Etherscan API (V2)
 
 ---
 
-## 🚀 Future Scope
+## ⚙️ How It Works
 
-* Multi-chain support (Bitcoin, Solana, etc.)
-* Real-time monitoring
-* Advanced graph analytics
-* Machine learning-based anomaly detection
+1. User enters a wallet address
+2. Backend fetches blockchain transaction data
+3. Data is processed into:
+
+   * Statistics
+   * Graph structure
+   * Detection inputs
+4. Detection engine flags suspicious patterns
+5. Frontend visualizes:
+
+   * Risk score
+   * Alerts
+   * Transaction flow
+   * Timeline
+
+---
+
+## 🔬 Cybersecurity Relevance
+
+This project demonstrates how blockchain transparency can be leveraged to:
+
+* Trace ransomware payments
+* Identify fund obfuscation techniques
+* Assist threat intelligence workflows
+* Support investigative analysis
+
+---
+
+## 🚀 Future Enhancements
+
+* Multi-chain support:
+
+  * Bitcoin
+  * Solana
+  * Tron
+* Advanced anomaly detection (ML-based)
+* Real-time transaction monitoring
+* Wallet clustering & attribution
+* Exportable investigation reports
+
+---
+
+## 📦 Setup Instructions
+
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/your-username/crypto-tracker.git
+cd crypto-tracker
+```
+
+---
+
+### 2. Backend Setup
+
+```bash
+cd backend
+npm install
+```
+
+Create `.env` file:
+
+```env
+ETHERSCAN_API_KEY=your_api_key_here
+```
+
+Run backend:
+
+```bash
+node server.js
+```
+
+---
+
+### 3. Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open:
+
+```
+http://localhost:5173
+```
 
 ---
 
 ## ⚠️ Disclaimer
 
-This project is for educational and demonstration purposes only.
-It simulates blockchain forensic workflows and does not guarantee real-world investigative accuracy.
+This project is intended for **educational and demonstration purposes only**.
+
+It simulates blockchain forensic analysis and does not guarantee real-world investigative accuracy.
 
 ---
 
-## 🧠 Hackathon Positioning
+## 🏆 Hackathon Positioning
 
-> This project is a simplified blockchain forensics tool that demonstrates how security teams can trace ransomware payments and identify suspicious fund movement patterns.
+This project showcases how cybersecurity and blockchain analysis intersect to provide:
+
+* Actionable intelligence from public ledger data
+* Visualization of complex financial flows
+* Detection of suspicious transaction behavior
+
+---
+
+## 🙌 Acknowledgements
+
+* Etherscan API
+* Open-source libraries
+* HackXTract 2026
+
+---
